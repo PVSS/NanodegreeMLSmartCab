@@ -46,12 +46,7 @@ class LearningAgent(Agent):
             self.epsilon = 0
             self.alpha = 0
         else:
-            # default learning
-            # self.epsilon = self.epsilon - 0.05
-            # improved learning
-            # self.epsilon = math.exp(-1 * self.alpha * self.trial)
-            # self.epsilon = math.pow(self.alpha, self.trial)
-            # self.epsilon = math.pow(self.trial, -2)
+			#cosine function used as decay
             self.epsilon = math.cos(self.alpha * self.trial)
 
         return None
@@ -70,10 +65,7 @@ class LearningAgent(Agent):
         ## TO DO ##
         ###########
         # Set 'state' as a tuple of relevant data for the agent
-        # When learning, check if the state is in the Q-table
-        #   If it is not, create a dictionary in the Q-table for the current 'state'
-        #   For each action, set the Q-value for the state-action pair to 0
-
+        
         state = (waypoint, inputs['light'], inputs['oncoming'])
         self.createQ(state)
 
@@ -141,7 +133,6 @@ class LearningAgent(Agent):
         else:
             action = random.choice(self.valid_actions)
         
-        # want to handle 'None' action
         return action
 
 
