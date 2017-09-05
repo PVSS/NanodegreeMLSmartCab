@@ -46,7 +46,12 @@ class LearningAgent(Agent):
             self.epsilon = 0
             self.alpha = 0
         else:
-			#cosine function used as decay
+            # default learning
+            # self.epsilon = self.epsilon - 0.05
+            # improved learning
+            # self.epsilon = math.exp(-1 * self.alpha * self.trial)
+            # self.epsilon = math.pow(self.alpha, self.trial)
+            # self.epsilon = math.pow(self.trial, -2)
             self.epsilon = math.cos(self.alpha * self.trial)
 
         return None
@@ -59,20 +64,23 @@ class LearningAgent(Agent):
         # Collect data about the environment
         waypoint = self.planner.next_waypoint() # The next waypoint 
         inputs = self.env.sense(self)           # Visual input - intersection light and traffic
-        deadline = self.env.get_deadline(self)  # Remaining deadline
+        #deadline = self.env.get_deadline(self)  # Remaining deadline
 
         ########### 
         ## TO DO ##
         ###########
         # Set 'state' as a tuple of relevant data for the agent
-        
-        state = (waypoint, inputs['light'], inputs['oncoming'])
+        # When learning, check if the state is in the Q-table
+        #   If it is not, create a dictionary in the Q-table for the current 'state'
+        #   For each action, set the Q-value for the state-action pair to 0
+
+        state = (waypoint,inputs['left'], inputs['light'], inputs['oncoming'])
         self.createQ(state)
 
         return state
 
 
-    def get_actions_maxQ(self):
+    def get_maxQ(self,state):
         """ The get_max_Q function is called when the agent is asked to find the
             maximum Q-value of all actions based on the 'state' the smartcab is in. """
 
@@ -81,18 +89,11 @@ class LearningAgent(Agent):
         ###########
         # Calculate the maximum Q-value of all actions for a given state
         maxQ = 0
-        actions = []
-
-        for action in self.Q[self.state]:
-            Qvalue = self.Q[self.state][action]
-            if maxQ < Qvalue:
-                maxQ = Qvalue
-                del actions[:]
-                actions.append(action)
-            elif maxQ == Qvalue:
-                actions.append(action)
+        for action in self.Q[state]:
+            if maxQ < self.Q[state][action]:
+                maxQ = self.Q[state][action]
+        return maxQ
         
-        return actions 
 
 
     def createQ(self, state):
@@ -129,10 +130,17 @@ class LearningAgent(Agent):
             if self.epsilon > random.random():
                 action = random.choice(self.valid_actions)
             else:
-                action = random.choice(self.get_actions_maxQ())
+                
+                maxQ = self.get_maxQ(state)
+                valid_actions = []
+                for act in self.Q[state]:
+                    if maxQ == self.Q[state][act]:
+                        valid_actions.append(act)
+                action = random.choice(valid_actions)
         else:
             action = random.choice(self.valid_actions)
         
+        # want to handle 'None' action
         return action
 
 
